@@ -1,0 +1,25 @@
+branches:
+  - 'main'
+
+plugins:
+  - - "@semantic-release/commit-analyzer"
+    - preset: conventionalcommits
+      releaseRules:
+        - type: "fix"
+          release: "patch"
+        - type: "feat"
+          release: "minor"
+        - type: "major"
+          release: "major"
+      parserOpts:
+        noteKeywords:
+          - "BREAKING CHANGE"
+          - "BREAKING CHANGES"
+  - "@semantic-release/release-notes-generator"
+  - - "@semantic-release/changelog"
+    - changelogFile: "CHANGELOG.md"
+  - - "@semantic-release/git"
+    - assets:
+        - "CHANGELOG.md"
+        - "package.json"
+  - "@semantic-release/github"
