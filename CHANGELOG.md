@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.1...v1.0.2) (2026-03-13)
+
+
+### Bug Fixes
+
+* [#12](https://github.com/tomo1015/personal-kpi-tool/issues/12) 集計関数実装対応 ([6d5d441](https://github.com/tomo1015/personal-kpi-tool/commit/6d5d441904e34293e8fd01bbdd3f1333daac8092))
+
 ## [1.0.1](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.0...v1.0.1) (2026-03-13)
 
 
