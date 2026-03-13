@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.0...v1.0.1) (2026-03-13)
+
+
+### Bug Fixes
+
+* KPI汎用エンジンの改修 ([5936590](https://github.com/tomo1015/personal-kpi-tool/commit/5936590b09eb405f0ffa7989f4a97349dd79e2eb))
+
 # 1.0.0 (2026-03-11)
 
 
