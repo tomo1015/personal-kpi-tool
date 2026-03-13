@@ -1,6 +1,9 @@
 package aggregator
 
-import "sort"
+import (
+	"math"
+	"sort"
+)
 
 // Mean は float64 スライスの算術平均を返す。空スライスの場合は 0 を返す。
 func Mean(v []float64) float64 {
@@ -41,6 +44,57 @@ func Max64(v []float64) float64 {
 		if x > m {
 			m = x
 		}
+	}
+	return m
+}
+
+// -------------------------------------------------------------------
+// KPI 集計関数
+// -------------------------------------------------------------------
+
+// Sum は float64 スライスの合計を返す。空スライスの場合は 0 を返す。
+func Sum(v []float64) float64 {
+	s := 0.0
+	for _, x := range v {
+		s += x
+	}
+	return s
+}
+
+// Avg は float64 スライスの平均を小数点2桁で返す。
+// 空スライスの場合は 0 を返す。
+// 丸めなしの平均が必要な内部計算には Mean を使うこと。
+func Avg(v []float64) float64 {
+	if len(v) == 0 {
+		return 0
+	}
+	raw := Sum(v) / float64(len(v))
+	return math.Round(raw*100) / 100
+}
+
+// Count は任意のスライスの要素数を返す。
+func Count[T any](v []T) int {
+	return len(v)
+}
+
+// Rate は part/total*100 を小数点2桁で返す（単位: %）。
+// total が 0 の場合は 0 を返す。
+func Rate(part, total float64) float64 {
+	if total == 0 {
+		return 0
+	}
+	raw := part / total * 100
+	return math.Round(raw*100) / 100
+}
+
+// Distribution は comparable なスライスを受け取り、
+// 値ごとの出現回数を map[T]int で返す。
+// 空スライスの場合は空の（nil ではない）マップを返す。
+func Distribution[T comparable](v []T) map[T]int {
+	// 最悪ケース（全要素が異なる）を想定して初期容量を確保する
+	m := make(map[T]int, len(v))
+	for _, x := range v {
+		m[x]++
 	}
 	return m
 }
