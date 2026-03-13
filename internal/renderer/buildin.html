@@ -1,0 +1,32 @@
+package renderer
+
+// builtinTemplate は外部テンプレートが指定されなかった場合に使用する
+// 最小限の組み込み HTML テンプレート。
+// Payload の内容を JSON 風に dump するだけのデバッグ用途を想定している。
+// 本番用レポートには必ず TemplatePath でカスタムテンプレートを指定すること。
+const builtinTemplate = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{.Title}}</title>
+<script>/* __CHARTJS_PLACEHOLDER__ */</script>
+<style>
+  body { background: #0f172a; color: #e2e8f0; font-family: system-ui, sans-serif; padding: 2rem; }
+  h1   { color: #38bdf8; margin-bottom: .5rem; }
+  .meta { color: #94a3b8; font-size: .85rem; margin-bottom: 2rem; }
+  pre  { background: #1e293b; border: 1px solid #334155; border-radius: .5rem;
+         padding: 1rem; white-space: pre-wrap; word-break: break-all; font-size: .8rem; }
+</style>
+</head>
+<body>
+<h1>{{.Title}}</h1>
+<p class="meta">
+  生成日時: {{.GeneratedAt}} |
+  フィルタ: {{.FilterInfo}} |
+  ユーザー数: {{.NUsers}}
+</p>
+<h2 style="color:#818cf8;margin-bottom:.5rem">集計結果（Payload）</h2>
+<pre>{{printf "%+v" .Payload}}</pre>
+</body>
+</html>`
