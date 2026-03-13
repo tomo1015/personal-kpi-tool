@@ -1,182 +1,153 @@
-// Package reader は、ストリーミング対応でメモリ効率に優れた CSV ローダーを提供します。
-// これはゲームに依存しません：列の意味論については何も知りません。
+// Package reader は CSV ファイルの汎用ストリーム読み込みと
+// 型変換ユーティリティを提供する。
 package reader
 
 import (
-	"bufio"
 	"encoding/csv"
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
 
-// レコードは CSV の 1 行です。キーは列名、値はトリミングされた文字列です。
+// Record は CSV の 1 行を表す。
+// キーはトリム済みのヘッダー名、値はトリム済みのセル文字列。
 type Record map[string]string
-─────────── ──────────────────────────────────────
-// オプション
-─────────────────────────────────────────────────
 
-// オプションはローダーの動作を制御します。
-type Options struct {
-    // SkipDuplicateKeyがnilでない場合、各行ごとに重複排除キーを返します。
-    // 全ファイルで重複キーを生成する行は黙って破棄されます。
-    // 例: func(r Record) string { return r[「user_id」]+「:」+r[「m_unit_id」] }
-	SkipDuplicateKey func(Record) string
-
-	// HeaderFinder は、CSV に前置行がある場合に真のヘッダー行を特定します。
-    // 各行候補を受け取り、ヘッダーが見つかった場合に true を返します。
-    // 最初の行をヘッダーとして扱うには nil を設定します。
-	HeaderFinder func(row []string) bool
-}
-───────────────────────────────────────── ────────
-// 公開API
-─────────────────────────────────────────────────
-// LoadCSVは1つのCSVファイルを読み込み、(records, skippedRows, error)を返します。
-// 個々の不正な行は処理を中止せずスキップされ、カウントされます。
-func LoadCSV(path string, opts Options) ([]Record, int, error) {
+// StreamCSV は path のファイルを開き、ヘッダー行を読み取った後、
+// データ行を 1 行ずつ fn に渡す。fn が error を返した場合は即座に中断する。
+// ファイルのクローズは StreamCSV 内で行うため、呼び出し側は意識しなくてよい。
+func StreamCSV(path string, fn func(rec Record) error) error {
 	f, err := os.Open(path)
 	if err != nil {
-		return nil, 0, err
+		return fmt.Errorf("ファイルを開けません(%s): %w", path, err)
 	}
 	defer f.Close()
-	return readFrom(f, opts)
-}
 
-// LoadCSVsは複数のCSVファイルをファイル間重複排除でマージします。
-// 開けないファイルはstderrにログ出力されスキップされます。
-func LoadCSVs(paths []string, opts Options) ([]Record, int, error) {
-	seen := map[string]bool{}
-	var all []Record
-	totalSkipped := 0
-
-	for _, p := range paths {
-		p = strings.TrimSpace(p)
-		f, err := os.Open(p)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "  [SKIP file] %s → %v\n", p, err)
-			continue
-		}
-		recs, skipped, err := readFrom(f, opts)
-		f.Close()
-		totalSkipped += skipped
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "  [SKIP file] %s → %v\n", p, err)
-			continue
-		}
-		loaded := 0
-		for _, r := range recs {
-			if opts.SkipDuplicateKey != nil {
-				k := opts.SkipDuplicateKey(r)
-				if seen[k] {
-					continue
-				}
-				seen[k] = true
-			}
-			all = append(all, r)
-			loaded++
-		}
-		fmt.Printf("  [OK] %s → %d 行\n", p, loaded)
+	r := csv.NewReader(f)
+	// 先頭行をヘッダーとして読み取る
+	headers, err := r.Read()
+	if err != nil {
+		return fmt.Errorf("ヘッダー読み取りエラー(%s): %w", path, err)
 	}
-	if len(all) == 0 {
-		return nil, totalSkipped, fmt.Errorf("有効データなし")
+	// ヘッダー名の前後空白をトリム
+	for i, h := range headers {
+		headers[i] = strings.TrimSpace(h)
 	}
-	return all, totalSkipped, nil
-}
-─────── ──────────────────────────────────────────
-//内部処理─────────────────────────────────────────────────
-─────────────────────────────────────────────────
-
-func readFrom(r io.Reader, opts Options) ([]Record, int, error) {
-	//大容量CSV用の4MB読み取りバッファ
-	br := bufio.NewReaderSize(r, 4*1024*1024) 
-	cr := csv.NewReader(br)
-	cr.LazyQuotes = true
-	cr.TrimLeadingSpace = true
-
-	var headers []string
-	// ヘッダー検出器なし → 1行目がヘッダー
-	headerFound := (opts.HeaderFinder == nil)
-	skipped := 0
-	var records []Record
 
 	for {
-		row, err := cr.Read()
+		row, err := r.Read()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			skipped++
-			continue
-		}
-
-		// ヘッダー行を特定
-		if !headerFound {
-			if opts.HeaderFinder(row) {
-				headers = normalizeRow(row)
-				headerFound = true
-			}
-			continue
-		}
-		// ヘッダー行の直後の行 → ヘッダーが未設定の場合、ヘッダーとして扱う
-		if headers == nil {
-			headers = normalizeRow(row)
-			continue
-		}
-		// 短すぎる行をスキップ
-		if len(row) < len(headers) {
-			skipped++
-			continue
+			return fmt.Errorf("CSV 読み取りエラー(%s): %w", path, err)
 		}
 		rec := make(Record, len(headers))
 		for i, h := range headers {
-			rec[h] = strings.TrimSpace(row[i])
+			if i < len(row) {
+				rec[h] = strings.TrimSpace(row[i])
+			} else {
+				rec[h] = ""
+			}
 		}
-		records = append(records, rec)
+		if err := fn(rec); err != nil {
+			return err
+		}
 	}
-	return records, skipped, nil
+	return nil
 }
 
-func normalizeRow(row []string) []string {
+// ReadAllCSV は path のファイル全行を []Record として返す。
+// ヘッダー行は含まない。
+func ReadAllCSV(path string) ([]Record, error) {
+	var recs []Record
+	err := StreamCSV(path, func(rec Record) error {
+		recs = append(recs, rec)
+		return nil
+	})
+	return recs, err
+}
+
+// Headers は path の CSV のヘッダー行だけを返す。
+// 大量ファイルのスキーマ確認用。
+func Headers(path string) ([]string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("ファイルを開けません(%s): %w", path, err)
+	}
+	defer f.Close()
+
+	r := csv.NewReader(f)
+	row, err := r.Read()
+	if err != nil {
+		return nil, err
+	}
 	out := make([]string, len(row))
-	for i, v := range row {
-		out[i] = strings.TrimSpace(v)
+	for i, h := range row {
+		out[i] = strings.TrimSpace(h)
 	}
-	return out
+	return out, nil
 }
 
-// ─────────────────────────────────────────────────
-// 変換ヘルパー関数（社内リポジトリ用にエクスポート）
-// ─────────────────────────────────────────────────
+// -------------------------------------------------------------------
+// 型変換ユーティリティ
+// -------------------------------------------------------------------
 
-// ParseDT はゲーム用 CSV で使用される一般的な日時/日付文字列を解析します。
+// supportedLayouts は ParseDT が試みる日時フォーマットの一覧。
+var supportedLayouts = []string{
+	"2006/01/02 15:04:05",
+	"2006-01-02 15:04:05",
+	"2006/01/02",
+	"2006-01-02",
+}
+
+// ParseDT は文字列 s を time.Time に変換する。
+// 対応フォーマット: "YYYY/MM/DD HH:MM:SS", "YYYY-MM-DD HH:MM:SS",
+// "YYYY/MM/DD", "YYYY-MM-DD"。
+// いずれにも該当しない場合は error を返す。
 func ParseDT(s string) (time.Time, error) {
-    for _, layout := range []string{
-        「2006/01/02 15:04:05」,
-        「2006-01-02 15:04:05」,
-        「2006/01/02」,
-		「2006-01-02」,
-    } {
-        if t, err := time.Parse(layout, strings.TrimSpace(s)); err == nil {
-            return t, nil
-        }
-    }
-    return time.Time{}, fmt.Errorf(「reader.ParseDT: cannot parse %q」, s)
+	s = strings.TrimSpace(s)
+	for _, layout := range supportedLayouts {
+		if t, err := time.Parse(layout, s); err == nil {
+			return t, nil
+		}
+	}
+	return time.Time{}, fmt.Errorf("日時フォーマット不明: %q", s)
 }
 
-// ToFloat は CSV 文字列を float64 に変換します。エラー時は 0 を返します。
+// ToInt は文字列 s を int に変換する。変換失敗時は 0 を返す。
+func ToInt(s string) int {
+	v, _ := strconv.Atoi(strings.TrimSpace(s))
+	return v
+}
+
+// ToFloat は文字列 s を float64 に変換する。変換失敗時は 0 を返す。
 func ToFloat(s string) float64 {
-    v := 0.0
-    fmt.Sscanf(strings.TrimSpace(s), 「%f」, &v)
-    return v
+	v, _ := strconv.ParseFloat(strings.TrimSpace(s), 64)
+	return v
 }
 
-// ToInt は CSV 文字列を int に変換します。エラー時は 0 を返します。
-func ToInt(s string) int { return int(ToFloat(s)) }
-
-// IsTruthy は 「1」 または 「true」（大文字小文字を区別しない）に対して true を返す。
+// IsTruthy は "1", "true"（大文字小文字不問）を true と判定する。
+// その他はすべて false を返す。
 func IsTruthy(s string) bool {
-    s = strings.ToLower(strings.TrimSpace(s))
-    return s == 「1」 || s == 「true」
+	s = strings.TrimSpace(s)
+	return s == "1" || strings.EqualFold(s, "true")
+}
+
+// Get は Record から col の値を返す。存在しない場合は空文字列を返す。
+func Get(rec Record, col string) string {
+	return rec[col]
+}
+
+// GetInt は Record から col の値を int として返す。
+func GetInt(rec Record, col string) int {
+	return ToInt(rec[col])
+}
+
+// GetBool は Record から col の値を IsTruthy で bool として返す。
+func GetBool(rec Record, col string) bool {
+	return IsTruthy(rec[col])
 }
