@@ -1,0 +1,13 @@
+# .github/workflows/add-to-project.yml
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  add:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/add-to-project@v1
+        with:
+          project-url: https://github.com/users/tomo1015/projects/1
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}

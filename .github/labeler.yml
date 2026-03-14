@@ -1,0 +1,35 @@
+# .github/labeler.yml
+repo/engine:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pkg/**'
+      - 'internal/**'
+      - 'cmd/analyzer/**'
+
+go:
+  - changed-files:
+    - any-glob-to-any-file: ['**/*.go']
+
+test:
+  - changed-files:
+    - any-glob-to-any-file: ['**/*_test.go']
+
+docs:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.md'
+      - 'README*'
+
+kpi:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pkg/kpidef/**'
+      - 'internal/aggregator/**'
+
+csv:
+  - changed-files:
+    - any-glob-to-any-file: ['internal/reader/**']
+
+interface:
+  - changed-files:
+    - any-glob-to-any-file: ['pkg/kpidef/**']
