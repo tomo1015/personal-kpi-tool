@@ -26,6 +26,9 @@ type Options struct {
 	// ChartJS は埋め込む Chart.js のソースコード。
 	// 空文字列の場合はプレースホルダーをそのまま残す。
 	ChartJS string
+	// ExtraFuncs はテンプレートに追加するカスタム関数マップ
+	// 継承先側で {{json}} 等のゲーム固有関数を登録するために使用する
+	ExtraFuncs template.FuncMap
 }
 
 // Render は rd の内容を HTML ファイルに書き出す。
@@ -48,10 +51,11 @@ func Render(rd *kpidef.RenderData, opts Options) error {
 	}
 
 	// テンプレートのパースと実行
-	tmpl, err := template.New("kpi").Funcs(defaultFuncMap()).Parse(tmplSrc)
-	if err != nil {
-		return fmt.Errorf("テンプレートパースエラー: %w", err)
+	funcMap := defaultFuncMap()
+	for k, v := range opts.ExtraFuncs {
+		funcMap[k] = v
 	}
+	tmpl, err := template.New("kpi").Funcs(funcMap).Parse(tmplSrc)
 
 	var buf strings.Builder
 	if err := tmpl.Execute(&buf, rd); err != nil {
