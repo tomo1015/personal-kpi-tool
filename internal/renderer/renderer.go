@@ -56,6 +56,9 @@ func Render(rd *kpidef.RenderData, opts Options) error {
 		funcMap[k] = v
 	}
 	tmpl, err := template.New("kpi").Funcs(funcMap).Parse(tmplSrc)
+	if err != nil {
+		return fmt.Errorf("テンプレートパースエラー: %w", err)
+	}
 
 	var buf strings.Builder
 	if err := tmpl.Execute(&buf, rd); err != nil {
