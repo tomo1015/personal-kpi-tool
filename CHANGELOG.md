@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.2...v1.0.3) (2026-03-14)
+
+
+### Bug Fixes
+
+* 計算ユーティリティのディレクトリを変更 ([d93c32e](https://github.com/tomo1015/personal-kpi-tool/commit/d93c32ecc9d2efdd5f891ff425129f8d94f6ed71))
+
 ## [1.0.2](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.1...v1.0.2) (2026-03-13)
 
 
