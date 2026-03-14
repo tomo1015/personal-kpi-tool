@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.3...v1.0.4) (2026-03-14)
+
+
+### Bug Fixes
+
+* csvreaderの公開ラッパーを切り出し ([13384a4](https://github.com/tomo1015/personal-kpi-tool/commit/13384a42a2e5a07b70b7ff4bead158c50f6ad1f0))
+
 ## [1.0.3](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.2...v1.0.3) (2026-03-14)
 
 
