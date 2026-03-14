@@ -1,3 +1,10 @@
+## [1.0.5](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.4...v1.0.5) (2026-03-14)
+
+
+### Bug Fixes
+
+* csvreaderの型定義を変更 ([d69e7ac](https://github.com/tomo1015/personal-kpi-tool/commit/d69e7acf327f40898a4f3ac60a84f03e071d051d))
+
 ## [1.0.4](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.3...v1.0.4) (2026-03-14)
 
 
