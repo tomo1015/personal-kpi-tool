@@ -1,3 +1,10 @@
+## [1.0.7](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.6...v1.0.7) (2026-03-14)
+
+
+### Bug Fixes
+
+* CI/Lint追加 ([6f1f567](https://github.com/tomo1015/personal-kpi-tool/commit/6f1f567de517f16ff95032d349f1f66eda77e102))
+
 ## [1.0.6](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.5...v1.0.6) (2026-03-14)
 
 
