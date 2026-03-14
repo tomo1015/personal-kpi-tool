@@ -79,7 +79,9 @@ func (s *sampleDef) Compute(rows any, filterInfo string) (*kpidef.RenderData, er
 	sum := 0.0
 	for _, rec := range recs {
 		v := 0.0
-		fmt.Sscanf(rec["value"], "%f", &v)
+		if _, err := fmt.Sscanf(rec["value"], "%f", &v); err != nil {
+			continue //パース失敗行はスキップ
+		}
 		sum += v
 	}
 	avg := 0.0
