@@ -1,3 +1,10 @@
+## [1.0.6](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.5...v1.0.6) (2026-03-14)
+
+
+### Bug Fixes
+
+* 組み込みテンプレート調整。公開ラッパー対応 ([e4459a6](https://github.com/tomo1015/personal-kpi-tool/commit/e4459a6e63467a754c134de9d8ffd4346347a38f))
+
 ## [1.0.5](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.4...v1.0.5) (2026-03-14)
 
 
