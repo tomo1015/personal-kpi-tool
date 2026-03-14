@@ -1,4 +1,5 @@
-# .github/workflows/ci.yml
+name: CI
+
 on:
   push:
     branches: [main]
@@ -7,10 +8,52 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-go@v5
         with:
           go-version: '1.25'
-      - run: go test ./...
-      - run: go build ./...
+
+      - name: テスト実行
+        run: go test ./...
+
+      - name: ビルド確認
+        run: go build ./...
+
+      - name: テスト失敗時に Issue を起票
+        if: failure() && github.ref == 'refs/heads/main'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `CI失敗: ${context.workflow} (${context.sha.slice(0, 7)})`;
+            const body = [
+              '## 失敗詳細',
+              `- ブランチ: \`${context.ref}\``,
+              `- コミット: ${context.sha.slice(0, 7)}`,
+              `- 実行URL: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              '',
+              '## 対応手順',
+              '- [ ] 失敗ログを確認する',
+              '- [ ] 修正 PR を作成する',
+            ].join('\n');
+
+            // 同名のオープン Issue があれば重複作成しない
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'bug',
+            });
+            if (existing.data.some(i => i.title === title)) return;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['bug', 'phase1'],
+            });
