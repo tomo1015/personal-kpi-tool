@@ -1,3 +1,11 @@
+## [1.0.8](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.7...v1.0.8) (2026-03-15)
+
+
+### Bug Fixes
+
+* engine単体動作確認用CLI作成 closes [#17](https://github.com/tomo1015/personal-kpi-tool/issues/17) ([8c42d79](https://github.com/tomo1015/personal-kpi-tool/commit/8c42d791db44984cfd0d33e0cb7210ade4e21e6c))
+* HTMLテスト実装 close [#16](https://github.com/tomo1015/personal-kpi-tool/issues/16) ([f6e076d](https://github.com/tomo1015/personal-kpi-tool/commit/f6e076d2efd5a9367e1a618f04afcfe1d58efc37))
+
 ## [1.0.7](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.6...v1.0.7) (2026-03-14)
 
 
