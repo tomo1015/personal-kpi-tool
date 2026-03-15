@@ -1,3 +1,10 @@
+## [1.0.9](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.8...v1.0.9) (2026-03-15)
+
+
+### Bug Fixes
+
+* 公開ラッパー追加 ([1acb06b](https://github.com/tomo1015/personal-kpi-tool/commit/1acb06b03fba5eaf12a9b479ca6149394565fa96))
+
 ## [1.0.8](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.7...v1.0.8) (2026-03-15)
 
 
