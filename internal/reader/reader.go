@@ -27,6 +27,7 @@ func StreamCSV(path string, fn func(rec Record) error) error {
 	defer f.Close()
 
 	r := csv.NewReader(f)
+	r.LazyQuotes = true
 	// 先頭行をヘッダーとして読み取る
 	headers, err := r.Read()
 	if err != nil {
@@ -81,6 +82,7 @@ func Headers(path string) ([]string, error) {
 	defer f.Close()
 
 	r := csv.NewReader(f)
+	r.LazyQuotes = true
 	row, err := r.Read()
 	if err != nil {
 		return nil, err
