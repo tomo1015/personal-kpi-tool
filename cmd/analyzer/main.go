@@ -10,28 +10,43 @@ import (
 	"os"
 	"time"
 
+	"github.com/tomo1015/personal-kpi-tool/example"
 	"github.com/tomo1015/personal-kpi-tool/internal/aggregator"
 	"github.com/tomo1015/personal-kpi-tool/internal/chartjs"
 	"github.com/tomo1015/personal-kpi-tool/internal/renderer"
+	"github.com/tomo1015/personal-kpi-tool/pkg/csvreader"
 	"github.com/tomo1015/personal-kpi-tool/pkg/kpidef"
 )
 
 func main() {
-	output := flag.String("o", "sample_report.html", "出力 HTML ファイルパス")
+	input := flag.String("input", "", "入力CSVファイルパス（省略時はダミーデータを使用)")
+	output := flag.String("output", "sample_report.html", "出力HTMLファイルパス")
+	tmplPath := flag.String("template", "", "カスタムテンプレートパス")
 	flag.Parse()
 
 	fmt.Println("=== game-kpi-engine サンプル動作確認 ===")
 
-	// サンプル KPIDefinition を使って集計
-	def := &sampleDef{}
-	// ダミーデータを渡す（実際の利用では CSV から読み込んだスライスを渡す）
-	dummyRows := []map[string]string{
-		{"user_id": "u001", "value": "10"},
-		{"user_id": "u002", "value": "20"},
-		{"user_id": "u003", "value": "30"},
+	// --inputが指定された場合CSVを読み込む。省略時はダミーデータを使用する。
+	var rows []map[string]string
+	if *input != "" {
+		var err error
+		rows, err = csvreader.ReadAllCSV(*input)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "CSV 読み込みエラー: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("CSV 読み込み完了: %s (%d 行)\n", *input, len(rows))
+	} else {
+		fmt.Println("--input 未指定のためダミーデータを使用します")
+		rows = []map[string]string{
+			{"user_id": "u001", "value": "10"},
+			{"user_id": "u002", "value": "20"},
+			{"user_id": "u003", "value": "30"},
+		}
 	}
-
-	rd, err := aggregator.Compute(def, dummyRows, "なし")
+	// サンプル KPIDefinition を使って集計
+	def := &example.SampleDef{}
+	rd, err := aggregator.Compute(def, rows, "なし")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "集計エラー: %v\n", err)
 		os.Exit(1)
@@ -47,7 +62,7 @@ func main() {
 	// HTML 出力
 	if err := renderer.Render(rd, renderer.Options{
 		OutputPath:   *output,
-		TemplatePath: "", // 空 = 組み込みテンプレートを使用
+		TemplatePath: *tmplPath,
 		ChartJS:      chartJS,
 	}); err != nil {
 		fmt.Fprintf(os.Stderr, "レンダリングエラー: %v\n", err)
