@@ -41,3 +41,10 @@ func GetBool(rec Record, key string) bool {
 func ParseDT(s string) (time.Time, error) {
 	return reader.ParseDT(s)
 }
+
+//StreamCSV は CSV を 1 行ずつ読み込み fn に渡します。
+func StreamCSV(path string, fn func(rec Record) error) error {
+	return reader.StreamCSV(path, func(r reader.Record) error {
+		return fn(Record(r))
+	})
+}
