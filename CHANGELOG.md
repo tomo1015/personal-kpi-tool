@@ -1,3 +1,10 @@
+## [1.0.11](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.10...v1.0.11) (2026-03-16)
+
+
+### Bug Fixes
+
+* StreamCSVを追加 ([a4d12d8](https://github.com/tomo1015/personal-kpi-tool/commit/a4d12d8c67190cc2cabc8f0ee53fc692ea8201f8))
+
 ## [1.0.10](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.9...v1.0.10) (2026-03-15)
 
 
