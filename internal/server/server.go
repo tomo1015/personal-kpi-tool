@@ -55,6 +55,10 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("/", s.basicAuth(func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/upload", http.StatusFound)
 	}))
+	// /health はベーシック認証なし（ALB ヘルスチェック用）
+	s.mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
 }
 
 // basicAuth はベーシック認証ミドルウェア。
