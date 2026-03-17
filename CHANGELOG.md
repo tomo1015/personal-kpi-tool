@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.11...v1.1.0) (2026-03-17)
+
+
+### Features
+
+* CSVアップロードやレポート表示するHTTPサーバーの実装 ([f3999db](https://github.com/tomo1015/personal-kpi-tool/commit/f3999dbfdafa49f21c686ee7d9f816cde0d42f3b))
+
 ## [1.0.11](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.10...v1.0.11) (2026-03-16)
 
 
