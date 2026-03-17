@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/tomo1015/personal-kpi-tool/compare/v1.1.0...v1.1.1) (2026-03-17)
+
+
+### Bug Fixes
+
+* ヘルスチェック用のエンドポイント追加。ReadMe更新 ([dce2684](https://github.com/tomo1015/personal-kpi-tool/commit/dce26848a5d64698be5905d96644ee3aadea18a4))
+
 # [1.1.0](https://github.com/tomo1015/personal-kpi-tool/compare/v1.0.11...v1.1.0) (2026-03-17)
 
 
