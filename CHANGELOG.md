@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/tomo1015/personal-kpi-tool/compare/v1.1.1...v1.2.0) (2026-03-17)
+
+
+### Features
+
+* AI考察を生成するHTTPを追加 ([cdc5cc3](https://github.com/tomo1015/personal-kpi-tool/commit/cdc5cc36314953d07afee97215d4f4f620687b7a))
+
 ## [1.1.1](https://github.com/tomo1015/personal-kpi-tool/compare/v1.1.0...v1.1.1) (2026-03-17)
 
 
