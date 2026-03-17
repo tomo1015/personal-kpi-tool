@@ -25,6 +25,9 @@ type Config struct {
 	// AnalyzeFunc はアップロード後に呼び出す分析関数。
 	// 引数は保存された unit CSV のパス。
 	AnalyzeFunc func(csvPath string) error
+	// InsightFunc はAI考察生成ボタン押下時に呼び出す関数。
+	// 生成された Markdownテキストを返す
+	InsightFunc func() (string, error)
 }
 
 // Server は HTTP サーバーの状態を保持する。
@@ -51,6 +54,7 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("/upload", s.basicAuth(s.handleUploadPage))
 	s.mux.HandleFunc("/analyze", s.basicAuth(s.handleAnalyze))
 	s.mux.HandleFunc("/report", s.basicAuth(s.handleReport))
+	s.mux.HandleFunc("/insight", s.basicAuth(s.handleInsight))
 	// ルートは /upload にリダイレクト
 	s.mux.HandleFunc("/", s.basicAuth(func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/upload", http.StatusFound)
@@ -224,10 +228,81 @@ input[type=file] { width: 100%%; background: #0f172a; border: 1px solid #334155;
   <form method="POST" action="/analyze">
     <button type="submit" class="btn analyze">▶ 分析を実行してレポートを表示</button>
   </form>
+   <hr class="divider">
+   <a href="/insight" style="color:#818cf8;font-size:.85rem;">🤖 AI 考察を見る</a>
 </div>
 </body>
 </html>`, statusHTML)
 
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	fmt.Fprint(w, html)
+}
+
+func (s *Server) handleInsight(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		s.renderInsightPage(w, "", "")
+	case http.MethodPost:
+		if s.cfg.InsightFunc == nil {
+			http.Error(w, "InsightFunc が設定されていません", http.StatusInternalServerError)
+			return
+		}
+		insight, err := s.cfg.InsightFunc()
+		if err != nil {
+			s.renderInsightPage(w, "error", err.Error())
+			return
+		}
+		s.renderInsightPage(w, "success", insight)
+	default:
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func (s *Server) renderInsightPage(w http.ResponseWriter, status, content string) {
+	var bodyHTML string
+	switch status {
+	case "success":
+		// Markdown を <pre> で表示（シンプル実装）
+		bodyHTML = fmt.Sprintf(`<div class="result"><pre>%s</pre></div>`, content)
+	case "error":
+		bodyHTML = fmt.Sprintf(`<p class="msg error">❌ %s</p>`, content)
+	}
+	html := fmt.Sprintf(`<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KPI AI 考察</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0f172a; color: #e2e8f0; font-family: system-ui, sans-serif; padding: 2rem; }
+h1 { color: #38bdf8; font-size: 1.3rem; margin-bottom: 1.5rem; }
+.card { background: #1e293b; border: 1px solid #334155; border-radius: 1rem; padding: 1.5rem; max-width: 800px; margin-bottom: 1.5rem; }
+.btn { display: inline-block; padding: .75rem 2rem; background: #818cf8; color: #fff;
+       font-weight: 700; border: none; border-radius: .5rem; cursor: pointer; font-size: 1rem; }
+.btn:hover { background: #a5b4fc; }
+.result { background: #0f172a; border: 1px solid #334155; border-radius: .5rem; padding: 1.5rem; }
+pre { white-space: pre-wrap; word-break: break-word; font-family: system-ui, sans-serif; font-size: .9rem; line-height: 1.7; }
+.msg { padding: .75rem 1rem; border-radius: .5rem; font-size: .85rem; margin-bottom: 1rem; }
+.error { background: #f8717122; color: #f87171; border: 1px solid #f87171; }
+.nav { margin-bottom: 1.5rem; }
+.nav a { color: #38bdf8; text-decoration: none; font-size: .85rem; margin-right: 1rem; }
+</style>
+</head>
+<body>
+<h1>🤖 AI 考察レポート</h1>
+<div class="nav">
+  <a href="/upload">← アップロード画面</a>
+  <a href="/report">📊 ダッシュボード</a>
+</div>
+<div class="card">
+  <form method="POST" action="/insight">
+    <button type="submit" class="btn">✨ AI 考察を生成する</button>
+  </form>
+</div>
+%s
+</body>
+</html>`, bodyHTML)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	fmt.Fprint(w, html)
 }
